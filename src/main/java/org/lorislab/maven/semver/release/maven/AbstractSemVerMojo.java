@@ -119,7 +119,7 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
         if (newVersion != null && !newVersion.equals(project.getVersion())) {
             try {
                 Path path = project.getFile().toPath();
-                String data = Files.readString(path, StandardCharsets.UTF_8);
+                String data = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 
                 XMLInputFactory factory = XMLInputFactory.newInstance();
                 XMLEventReader eventReader = factory.createXMLEventReader(new FileReader(project.getFile()));
@@ -150,7 +150,7 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
                 }
 
                 if (find) {
-                    Files.writeString(path, data);
+                    Files.write(path, data.getBytes(StandardCharsets.UTF_8));
                     getLog().info("Set project version: " + newVersion);
                 }
 
