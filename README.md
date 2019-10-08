@@ -2,10 +2,12 @@
 
 Semantic versioning release maven plugin
 
-[![Build](https://img.shields.io/gitlab/pipeline/lorislab/maven/semver-release-maven-plugin?style=for-the-badge&logo=gitlab)](https://gitlab.com/lorislab/maven/semver-release-maven-plugin/pipelines)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Maven Central](https://img.shields.io/maven-central/v/org.lorislab.maven/semver-release-maven-plugin?style=for-the-badge&maven)](https://maven-badges.herokuapp.com/maven-central/org.lorislab.maven/semver-release-maven-plugin)
+[![License](https://img.shields.io/github/license/lorislab/semver-release-maven-plugin?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CircleCI](https://img.shields.io/circleci/build/github/lorislab/semver-release-maven-plugin?logo=circleci&style=for-the-badge)](https://circleci.com/gh/lorislab/semver-release-maven-plugin)
+[![Maven Central](https://img.shields.io/maven-central/v/org.lorislab.maven/semver-release-maven-plugin?logo=java&style=for-the-badge)](https://maven-badges.herokuapp.com/maven-central/org.lorislab.maven/semver-release-maven-plugin)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/lorislab/semver-release-maven-plugin?logo=github&style=for-the-badge)](https://github.com/lorislab/semver-release-maven-plugin/releases/latest)
 
+# Properties
 
 ## Git version 
 
@@ -37,7 +39,7 @@ mvn semver-release:release-create
 ```
 
 Properties:
-* skipPush - skip push git changes to remote repository. Defaut: false
+* skipPush - skip push git changes to remote repository. Default: false
 
 ## Patch
 
@@ -48,5 +50,19 @@ mvn semver-release:patch-create
 ```
 
 Properties:
-* skipPush - skip push git changes to remote repository. Defaut: false
-* patchVersion - create patch from this version (a.b.0). Default: null,inteactive mode.
+* skipPush - skip push git changes to remote repository. Default: false
+* patchVersion - create patch from this version (a.b.0). Default: null,interactive mode.
+
+# Release
+
+## Release process of this plugin
+
+Create new release run
+```bash
+mvn semver-release:release-create
+```
+
+Create new patch branch run
+```bash
+mvn semver-release:patch-create -DpatchVersion=X.X.0
+```
