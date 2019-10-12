@@ -31,6 +31,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 
+import java.text.MessageFormat;
+
 /**
  * Creates the patch.
  */
@@ -51,6 +53,14 @@ public class PatchMojo extends AbstractSemVerMojo {
      */
     @Parameter(property = "patchVersion", name = "patchVersion")
     String patchVersion;
+
+    /**
+     * The patch version. Default is '{0}.{1}'.
+     * {0} - major version
+     * {1} - minor version.
+     */
+    @Parameter(property = "branchPattern", name = "branchPattern", defaultValue = "{0}.{1}")
+    String branchPattern;
 
     /**
      * Skip git push to remote repository.
@@ -77,14 +87,15 @@ public class PatchMojo extends AbstractSemVerMojo {
         }
 
         Version releaseVersion = Version.valueOf(version.getNormalVersion());
-        Version patchVersion = releaseVersion.incrementPatchVersion(SNAPSHOT);
+        Version pv = releaseVersion.incrementPatchVersion(SNAPSHOT);
 
         try (Repository repository = getGitRepository()) {
             try (Git git = new Git(repository)) {
 
                 String branch = repository.getBranch();
+
                 // the branch name
-                String branchName = releaseVersion.getMajorVersion() + "." + releaseVersion.getMinorVersion();
+                String branchName = MessageFormat.format(branchPattern, releaseVersion.getMajorVersion(), releaseVersion.getMinorVersion());
 
                 // checkout TAG release as patch branch
                 Ref ref = repository.findRef(releaseVersion.getNormalVersion());
@@ -94,11 +105,11 @@ public class PatchMojo extends AbstractSemVerMojo {
                 getLog().info("Create new branch: " + branchName);
 
                 // change to patch version
-                changeProjectVersion(patchVersion);
+                changeProjectVersion(pv.toString());
 
                 // commit changes
                 git.add().setUpdate(true).addFilepattern(".").call();
-                git.commit().setMessage("Create patch version " + patchVersion).call();
+                git.commit().setMessage("Create patch version " + pv).call();
                 if (!skipPush) {
                     git.push().setRemote("origin").setPushAll().call();
                     getLog().info("Git push changes.");
@@ -111,6 +122,6 @@ public class PatchMojo extends AbstractSemVerMojo {
         } catch (Exception ex) {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }
-        getLog().info("Create new patch version " + patchVersion);
+        getLog().info("Create new patch version " + pv);
     }
 }

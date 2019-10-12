@@ -17,10 +17,13 @@
 package org.lorislab.maven.semver.release.maven;
 
 import com.github.zafarkhaja.semver.Version;
+import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.mojo.versions.api.PomHelper;
+import org.codehaus.mojo.versions.ordering.ReactorDepthComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
@@ -34,6 +37,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * The abstract semver mojo.
@@ -49,6 +55,11 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
      * The project version xpath
      */
     private static final String PROJECT_VERSION_XPATH = "/project/version";
+
+    /**
+     * The project parent version xpath
+     */
+    private static final String PARENT_PROJECT_VERSION_XPATH = "/project/parent/version";
 
     /**
      * The project version start element.
@@ -103,60 +114,82 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
 
     /**
      * Changed project version
-     * @param newVersion the new version.
-     * @throws MojoExecutionException if the method fails.
-     */
-    void changeProjectVersion(Version newVersion) throws MojoExecutionException {
-        changeProjectVersion(newVersion.toString());
-    }
-
-    /**
-     * Changed project version
+     *
      * @param newVersion the new version.
      * @throws MojoExecutionException if the method fails.
      */
     void changeProjectVersion(String newVersion) throws MojoExecutionException {
+        // change current project
         if (newVersion != null && !newVersion.equals(project.getVersion())) {
+            changeVersion(project.getFile(), newVersion, PROJECT_VERSION_XPATH);
+
+            // update parent in the project children
             try {
-                Path path = project.getFile().toPath();
-                String data = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                Map<String, Model> reactorModels = PomHelper.getReactorModels(project, getLog());
+                final SortedMap<String, Model> reactor = new TreeMap<String, Model>(new ReactorDepthComparator(reactorModels));
+                reactor.putAll(reactorModels);
 
-                XMLInputFactory factory = XMLInputFactory.newInstance();
-                XMLEventReader eventReader = factory.createXMLEventReader(new FileReader(project.getFile()));
+                Map<String, Model> children = PomHelper.getChildModels(reactor, project.getGroupId(), project.getArtifactId());
 
-                String xpath = "";
-                boolean find = false;
-                int begin = 0;
-                while (eventReader.hasNext() && !find) {
-                    XMLEvent xmlEvent = eventReader.nextEvent();
-                    if (xmlEvent.isStartElement()) {
-                        StartElement startElement = xmlEvent.asStartElement();
-                        xpath = xpath + "/" + startElement.getName().getLocalPart();
-                        if (PROJECT_VERSION_XPATH.equals(xpath)) {
-                            begin = xmlEvent.getLocation().getCharacterOffset() + XML_VERSION_BEGIN_ELEMENT_LENGTH;
-                        }
-                    } else if (xmlEvent.isEndElement()) {
-                        if (PROJECT_VERSION_XPATH.equals(xpath)) {
-                            int end = xmlEvent.getLocation().getCharacterOffset();
-                            find = true;
-                            data = data.substring(0, begin) + newVersion + data.substring(end);
-                        } else {
-                            int index = xpath.lastIndexOf("/");
-                            if (index > -1) {
-                                xpath = xpath.substring(0, index);
-                            }
-                        }
-                    }
+                for (Map.Entry<String, Model> child : children.entrySet()) {
+                    File file = getFile(project, child.getKey());
+                    changeVersion(file, newVersion, PARENT_PROJECT_VERSION_XPATH);
                 }
-
-                if (find) {
-                    Files.write(path, data.getBytes(StandardCharsets.UTF_8));
-                    getLog().info("Set project version: " + newVersion);
-                }
-
             } catch (Exception ex) {
                 throw new MojoExecutionException(ex.getMessage(), ex);
             }
         }
+    }
+
+    private void changeVersion(File file, String newVersion, String xp) throws MojoExecutionException {
+        try {
+            String data = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLEventReader eventReader = factory.createXMLEventReader(new FileReader(file));
+            String xpath = "";
+            boolean find = false;
+            int begin = 0;
+            while (eventReader.hasNext() && !find) {
+                XMLEvent xmlEvent = eventReader.nextEvent();
+                if (xmlEvent.isStartElement()) {
+                    StartElement startElement = xmlEvent.asStartElement();
+                    xpath = xpath + "/" + startElement.getName().getLocalPart();
+                    if (xp.equals(xpath)) {
+                        begin = xmlEvent.getLocation().getCharacterOffset() + XML_VERSION_BEGIN_ELEMENT_LENGTH;
+                    }
+                } else if (xmlEvent.isEndElement()) {
+                    if (xp.equals(xpath)) {
+                        int end = xmlEvent.getLocation().getCharacterOffset();
+                        find = true;
+                        data = data.substring(0, begin) + newVersion + data.substring(end);
+                    } else {
+                        int index = xpath.lastIndexOf("/");
+                        if (index > -1) {
+                            xpath = xpath.substring(0, index);
+                        }
+                    }
+                }
+            }
+
+            if (find) {
+                Files.write(file.toPath(), data.getBytes(StandardCharsets.UTF_8));
+                getLog().info("Set " + xp + " to " + newVersion + " in file " + file);
+            }
+
+        } catch (Exception ex) {
+            throw new MojoExecutionException(ex.getMessage(), ex);
+        }
+    }
+
+    private File getFile(MavenProject project, String relativePath) {
+        final File moduleDir = new File(project.getBasedir(), relativePath);
+        final File projectBaseDir = project.getBasedir();
+        if (projectBaseDir.equals(moduleDir)) {
+            return project.getFile();
+        } else if (moduleDir.isDirectory()) {
+            return new File(moduleDir, "pom.xml");
+        }
+        return moduleDir;
     }
 }

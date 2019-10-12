@@ -58,7 +58,7 @@ public class ReleaseMojo extends AbstractSemVerMojo {
                 git.tag().setName(tag).call();
                 getLog().info("Create tag: " + tag);
 
-                changeProjectVersion(newVersion);
+                changeProjectVersion(newVersion.toString());
 
                 git.add().setUpdate(true).addFilepattern(".").call();
                 git.commit().setMessage("Development version " + newVersion).call();

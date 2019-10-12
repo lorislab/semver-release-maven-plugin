@@ -68,9 +68,10 @@ public class VersionGitHashMojo extends AbstractSemVerMojo {
     private String gitHash() throws MojoExecutionException {
         try (Repository repository = getGitRepository()) {
             Ref head = repository.findRef("HEAD");
-            ObjectReader objectReader = repository.newObjectReader();
-            AbbreviatedObjectId abbreviatedObjectId = objectReader.abbreviate(head.getObjectId(), abbrevLength);
-            return abbreviatedObjectId.name();
+            try (ObjectReader objectReader = repository.newObjectReader()) {
+                AbbreviatedObjectId abbreviatedObjectId = objectReader.abbreviate(head.getObjectId(), abbrevLength);
+                return abbreviatedObjectId.name();
+            }
         } catch (Exception ex) {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }
