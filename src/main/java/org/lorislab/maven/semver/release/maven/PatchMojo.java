@@ -39,6 +39,7 @@ import java.text.MessageFormat;
 @Mojo(name = "patch-create",
         defaultPhase = LifecyclePhase.INITIALIZE,
         requiresProject = true,
+        aggregator = true,
         threadSafe = true)
 public class PatchMojo extends AbstractSemVerMojo {
 

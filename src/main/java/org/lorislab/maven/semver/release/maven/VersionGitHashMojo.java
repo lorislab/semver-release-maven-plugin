@@ -33,6 +33,7 @@ import org.eclipse.jgit.lib.Repository;
 @Mojo(name = "version-git-hash",
         defaultPhase = LifecyclePhase.INITIALIZE,
         requiresProject = true,
+        aggregator = true,
         threadSafe = true)
 public class VersionGitHashMojo extends AbstractSemVerMojo {
 

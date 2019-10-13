@@ -28,6 +28,7 @@ import org.eclipse.jgit.lib.Repository;
 @Mojo(name = "release-create",
         defaultPhase = LifecyclePhase.INITIALIZE,
         requiresProject = true,
+        aggregator = true,
         threadSafe = true)
 public class ReleaseMojo extends AbstractSemVerMojo {
 

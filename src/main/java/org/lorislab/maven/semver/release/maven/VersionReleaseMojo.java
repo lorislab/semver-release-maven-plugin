@@ -28,6 +28,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 @Mojo(name = "version-release",
         defaultPhase = LifecyclePhase.INITIALIZE,
         requiresProject = true,
+        aggregator = true,
         threadSafe = true)
 public class VersionReleaseMojo extends AbstractSemVerMojo {
 
