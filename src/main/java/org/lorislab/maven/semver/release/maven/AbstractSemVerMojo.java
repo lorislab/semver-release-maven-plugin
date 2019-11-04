@@ -108,7 +108,7 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
         return repositoryBuilder
                 .setGitDir(dotGitDirectory)
                 .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
+//                .findGitDir() // scan up the file system tree
                 .build();
     }
 
