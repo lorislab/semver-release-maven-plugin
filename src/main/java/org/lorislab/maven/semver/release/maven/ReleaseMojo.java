@@ -39,6 +39,12 @@ public class ReleaseMojo extends AbstractSemVerMojo {
     boolean skipPush;
 
     /**
+     * Skip git push to remote repository.
+     */
+    @Parameter(property = "tagMessage", name = "tagMessage", defaultValue = "Release %s")
+    String tagMessage;
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -56,7 +62,12 @@ public class ReleaseMojo extends AbstractSemVerMojo {
             try (Git git = new Git(repository)) {
 
                 String tag = version.getNormalVersion();
-                git.tag().setName(tag).call();
+                git.tag()
+                        .setAnnotated(true)
+                        .setName(tag)
+                        .setMessage(String.format(tagMessage, tag))
+                        .call();
+
                 getLog().info("Create tag: " + tag);
 
                 changeProjectVersion(newVersion.toString());

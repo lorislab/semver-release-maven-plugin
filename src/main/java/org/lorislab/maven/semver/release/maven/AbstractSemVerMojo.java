@@ -121,7 +121,6 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
     void changeProjectVersion(String newVersion) throws MojoExecutionException {
         // change current project
         if (newVersion != null && !newVersion.equals(project.getVersion())) {
-            changeVersion(project.getFile(), newVersion, PROJECT_VERSION_XPATH);
 
             // update parent in the project children
             try {
@@ -129,15 +128,29 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
                 final SortedMap<String, Model> reactor = new TreeMap<String, Model>(new ReactorDepthComparator(reactorModels));
                 reactor.putAll(reactorModels);
 
-                Map<String, Model> children = PomHelper.getChildModels(reactor, project.getGroupId(), project.getArtifactId());
-
-                for (Map.Entry<String, Model> child : children.entrySet()) {
-                    File file = getFile(project, child.getKey());
-                    changeVersion(file, newVersion, PARENT_PROJECT_VERSION_XPATH);
-                }
+                changeVersions("", reactor, project.getGroupId(), project.getArtifactId(), newVersion);
             } catch (Exception ex) {
                 throw new MojoExecutionException(ex.getMessage(), ex);
             }
+        }
+    }
+
+
+    private void changeVersions(String key, SortedMap<String, Model> reactor, String groupId, String artifactId, String newVersion) throws MojoExecutionException {
+        // change the current pom version
+        changeVersion(getFile(project, key), newVersion, PROJECT_VERSION_XPATH);
+
+        // change the current pom child parent version
+        Map<String, Model> children = PomHelper.getChildModels(reactor, groupId, artifactId);
+        for (Map.Entry<String, Model> child : children.entrySet()) {
+            File file = getFile(project, child.getKey());
+            changeVersion(file, newVersion, PARENT_PROJECT_VERSION_XPATH);
+            String childGroupId = child.getValue().getGroupId();
+            if (childGroupId == null) {
+                childGroupId = groupId;
+            }
+            // change the child version
+            changeVersions(child.getKey(), reactor, childGroupId, child.getValue().getArtifactId(), newVersion);
         }
     }
 
