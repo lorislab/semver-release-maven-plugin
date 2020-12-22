@@ -105,10 +105,11 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
      */
     Repository getGitRepository() throws IOException {
         FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
-        return repositoryBuilder
-                .setGitDir(dotGitDirectory)
-                .readEnvironment() // scan environment GIT_* variables
-//                .findGitDir() // scan up the file system tree
+        if (dotGitDirectory.exists() && dotGitDirectory.isDirectory()) {
+            repositoryBuilder.setGitDir(dotGitDirectory);
+        }
+        return repositoryBuilder.readEnvironment() // scan environment GIT_* variables
+                // .findGitDir() // scan up the file system tree
                 .build();
     }
 
@@ -125,7 +126,8 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
             // update parent in the project children
             try {
                 Map<String, Model> reactorModels = PomHelper.getReactorModels(project, getLog());
-                final SortedMap<String, Model> reactor = new TreeMap<String, Model>(new ReactorDepthComparator(reactorModels));
+                final SortedMap<String, Model> reactor = new TreeMap<String, Model>(
+                        new ReactorDepthComparator(reactorModels));
                 reactor.putAll(reactorModels);
 
                 changeVersions("", reactor, project.getGroupId(), project.getArtifactId(), newVersion);
@@ -135,8 +137,8 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
         }
     }
 
-
-    private void changeVersions(String key, SortedMap<String, Model> reactor, String groupId, String artifactId, String newVersion) throws MojoExecutionException {
+    private void changeVersions(String key, SortedMap<String, Model> reactor, String groupId, String artifactId,
+            String newVersion) throws MojoExecutionException {
         // change the current pom version
         changeVersion(getFile(project, key), newVersion, PROJECT_VERSION_XPATH);
 
