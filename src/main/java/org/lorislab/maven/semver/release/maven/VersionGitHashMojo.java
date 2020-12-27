@@ -49,7 +49,6 @@ public class VersionGitHashMojo extends AbstractSemVerMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Version version = getVersion();
-        // if (isSnapshot(version)) {
 
         // replace SNAPSHOT with git hash
         String tmp = gitHash();
@@ -57,7 +56,6 @@ public class VersionGitHashMojo extends AbstractSemVerMojo {
 
         // change project version
         changeProjectVersion(version.toString());
-        // }
     }
 
     /**

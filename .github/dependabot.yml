@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "23:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+    allow:
+      #JGit
+      - dependency-name: org.eclipse.jgit:org.eclipse.jgit
+      - dependency-name: org.eclipse.jgit:org.eclipse.jgit.gpg.bc
+      #SemVer
+      - dependency-name: com.github.zafarkhaja:java-semver
+      #XML
+      - dependency-name: org.dom4j:dom4j
+      - dependency-name: jaxen:jaxen
+      #Maven
+      - dependency-name: org.codehaus.mojo:versions-maven-plugin
+      - dependency-name: org.apache.maven.plugin-tools:maven-plugin-annotations
+      - dependency-name: org.apache.maven:maven-plugin-api
+      - dependency-name: org.apache.maven:maven-core
+    rebase-strategy: disabled

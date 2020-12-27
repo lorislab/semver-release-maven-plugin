@@ -84,7 +84,13 @@ abstract class AbstractSemVerMojo extends AbstractMojo {
      * @return the maven project version.
      */
     Version getVersion() {
-        return Version.valueOf(project.getVersion());
+        try {
+            return Version.valueOf(project.getVersion());
+        } catch (Exception ex) {
+            getLog().error("Only the SemVer 2.0 format (major.minor.patch-label) is supported for the project version!");
+            getLog().error("Error parsing version: " + project.getVersion() + ", error:" + ex.toString());
+            throw ex;
+        }
     }
 
     /**

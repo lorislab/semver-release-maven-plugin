@@ -3,9 +3,10 @@
 Semantic versioning release maven plugin
 
 [![License](https://img.shields.io/github/license/lorislab/semver-release-maven-plugin?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
-[![CircleCI](https://img.shields.io/circleci/build/github/lorislab/semver-release-maven-plugin?logo=circleci&style=for-the-badge)](https://circleci.com/gh/lorislab/semver-release-maven-plugin)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/lorislab/semver-release-maven-plugin/build/master?logo=github&style=for-the-badge)](https://github.com/lorislab/semver-release-maven-plugin/actions?query=workflow%3Abuild)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/lorislab/semver-release-maven-plugin?sort=semver&logo=github&style=for-the-badge)](https://github.com/lorislab/semver-release-maven-plugin/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/org.lorislab.maven/semver-release-maven-plugin?logo=java&style=for-the-badge)](https://maven-badges.herokuapp.com/maven-central/org.lorislab.maven/semver-release-maven-plugin)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/lorislab/semver-release-maven-plugin?logo=github&style=for-the-badge)](https://github.com/lorislab/semver-release-maven-plugin/releases/latest)
+
 
 # Properties
 
@@ -52,17 +53,3 @@ mvn semver-release:patch-create
 Properties:
 * skipPush - skip push git changes to remote repository. Default: false
 * patchVersion - create patch from this version (a.b.0). Default: null,interactive mode.
-
-# Release
-
-## Release process of this plugin
-
-Create new release run
-```bash
-mvn semver-release:release-create
-```
-
-Create new patch branch run
-```bash
-mvn semver-release:patch-create -DpatchVersion=X.X.0
-```
