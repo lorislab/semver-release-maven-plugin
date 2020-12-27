@@ -49,15 +49,15 @@ public class VersionGitHashMojo extends AbstractSemVerMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Version version = getVersion();
-        if (isSnapshot(version)) {
+        // if (isSnapshot(version)) {
 
-            // replace SNAPSHOT with git hash
-            String tmp = gitHash();
-            version = version.setPreReleaseVersion(tmp);
+        // replace SNAPSHOT with git hash
+        String tmp = gitHash();
+        version = version.setPreReleaseVersion(tmp);
 
-            // change project version
-            changeProjectVersion(version.toString());
-        }
+        // change project version
+        changeProjectVersion(version.toString());
+        // }
     }
 
     /**
